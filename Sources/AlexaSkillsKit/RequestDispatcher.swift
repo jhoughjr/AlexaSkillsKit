@@ -19,7 +19,7 @@ open class RequestDispatcher {
     /// - Returns: Output data.
     /// - Throws: Error.
     open func dispatch(data: Data) throws -> Data {
-        var dispatchResult = Result<Data>.failure(MessageError(message: "Error waiting for result"))
+        var dispatchResult = DataResult.failure(MessageError(message: "Error waiting for result"))
 
         let dispatchSemaphore = DispatchSemaphore(value: 1)
         dispatch(data: data) { result in
@@ -42,7 +42,7 @@ open class RequestDispatcher {
     /// - Parameters:
     ///   - data: Input data.
     ///   - completion: Completion handler.
-    open func dispatch(data: Data, completion: @escaping (Result<Data>) -> ()) {
+    open func dispatch(data: Data, completion: @escaping (DataResult) -> ()) {
         guard let _ = try? requestParser.update(with: data),
             let requestType = requestParser.parseRequestType() else {
                 completion(.failure(MessageError(message: "Error parsing request")))
@@ -87,7 +87,7 @@ open class RequestDispatcher {
 }
 
 extension RequestDispatcher {
-    func handleResponse(result: StandardResult, completion: (Result<Data>) -> ()) -> () {
+    func handleResponse(result: StandardResult, completion: (DataResult) -> ()) -> () {
         switch result {
         case .success(let result):
             generateResponse(standardResponse: result.standardResponse, sessionAttributes: result.sessionAttributes, completion: completion)
@@ -96,7 +96,7 @@ extension RequestDispatcher {
         }
     }
     
-    func handleResponse(result: VoidResult, completion: (Result<Data>) -> ()) -> () {
+    func handleResponse(result: VoidResult, completion: (DataResult) -> ()) -> () {
         switch result {
         case .success:
             generateResponse(standardResponse: nil, sessionAttributes: [:], completion: completion)
@@ -105,7 +105,7 @@ extension RequestDispatcher {
         }
     }
     
-    func generateResponse(standardResponse: StandardResponse?, sessionAttributes: [String: Any], completion: (Result<Data>) -> ()) -> () {
+    func generateResponse(standardResponse: StandardResponse?, sessionAttributes: [String: Any], completion: (DataResult) -> ()) -> () {
         responseGenerator.update(standardResponse: standardResponse, sessionAttributes: sessionAttributes)
         guard let jsonData = try? responseGenerator.generateJSON(options: .prettyPrinted) else {
             completion(.failure(MessageError(message: "Error generating response")))

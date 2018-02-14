@@ -12,16 +12,22 @@ public struct MessageError: Swift.Error, Equatable {
     }
 }
 
-public enum Result<T> {
-    case success(T)
+// "enum Result<T>" produced errors in Swift 4.0.3, so the non-template version below is a workaround
+
+public enum StandardResult {
+    case success(standardResponse: StandardResponse, sessionAttributes: [String: Any])
     case failure(MessageError)
-    
-    // Can't implement Equatable unless session attributes are changed from 
-    // [String: Any] to something that can be compared
 }
 
-public typealias StandardResult = Result<(standardResponse: StandardResponse, sessionAttributes: [String: Any])>
-public typealias VoidResult = Result<Void>
+public enum DataResult {
+    case success(Data)
+    case failure(MessageError)
+}
+
+public enum VoidResult {
+    case success()
+    case failure(MessageError)
+}
 
 public protocol RequestHandler {
     func handleLaunch(request: LaunchRequest, session: Session, next: @escaping (StandardResult) -> ())
