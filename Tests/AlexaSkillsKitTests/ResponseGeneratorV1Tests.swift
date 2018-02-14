@@ -7,11 +7,13 @@ class ResponseGeneratorV1Tests: XCTestCase {
         ("testResponseMinimal", testResponseMinimal),
         ("testSessionAttributes", testSessionAttributes),
         ("testStandardResponseOutputSpeechPlain", testStandardResponseOutputSpeechPlain),
+        ("testStandardResponseOutputSpeechSSML", testStandardResponseOutputSpeechSSML),
         ("testStandardResponseShouldEndSessionFalse", testStandardResponseShouldEndSessionFalse),
         ("testStandardResponseOutputSpeechPlain", testStandardResponseOutputSpeechPlain),
         ("testStandardResponseCardSimple", testStandardResponseCardSimple),
         ("testStandardResponseCardStandard", testStandardResponseCardStandard),
         ("testStandardResponseRepromptPlain", testStandardResponseRepromptPlain),
+        ("testStandardResponseRepromptSSML", testStandardResponseRepromptSSML),
         ("testGenerateJSONTrue", testGenerateJSONTrue),
         ("testGenerateJSONFalse", testGenerateJSONFalse)
     ]
@@ -47,7 +49,7 @@ class ResponseGeneratorV1Tests: XCTestCase {
         let outputSpeech = OutputSpeech.plain(text: "text")
         let standardResponse = StandardResponse(outputSpeech: outputSpeech)
         generator.update(standardResponse: standardResponse, sessionAttributes: [:])
-        
+
         let json = generator.generateJSONObject()
         let jsonResponse = json["response"] as? [String: Any]
         let jsonOutputSpeech = jsonResponse?["outputSpeech"] as? [String: Any]
@@ -55,7 +57,20 @@ class ResponseGeneratorV1Tests: XCTestCase {
         XCTAssertEqual(jsonOutputSpeech?["type"] as? String, "PlainText")
         XCTAssertEqual(jsonOutputSpeech?["text"] as? String, "text")
     }
-    
+
+    func testStandardResponseOutputSpeechSSML() {
+        let outputSpeech = OutputSpeech.ssml(text: "<speak>ssml</speak>")
+        let standardResponse = StandardResponse(outputSpeech: outputSpeech)
+        generator.update(standardResponse: standardResponse, sessionAttributes: [:])
+
+        let json = generator.generateJSONObject()
+        let jsonResponse = json["response"] as? [String: Any]
+        let jsonOutputSpeech = jsonResponse?["outputSpeech"] as? [String: Any]
+        XCTAssertEqual(jsonOutputSpeech?.count, 2)
+        XCTAssertEqual(jsonOutputSpeech?["type"] as? String, "SSML")
+        XCTAssertEqual(jsonOutputSpeech?["ssml"] as? String, "<speak>ssml</speak>")
+    }
+
     func testStandardResponseCardSimple() {
         let card = Card.simple(title: "title", content: "content")
         let standardResponse = StandardResponse(card: card)
@@ -85,12 +100,12 @@ class ResponseGeneratorV1Tests: XCTestCase {
         XCTAssertEqual(jsonCard?["text"] as? String, "text")
         XCTAssertNotNil(jsonCard?["image"])
     }
-    
+
     func testStandardResponseRepromptPlain() {
         let outputSpeech = OutputSpeech.plain(text: "text")
         let standardResponse = StandardResponse(reprompt: outputSpeech)
         generator.update(standardResponse: standardResponse, sessionAttributes: [:])
-        
+
         let json = generator.generateJSONObject()
         let jsonResponse = json["response"] as? [String: Any]
         let jsonReprompt = jsonResponse?["reprompt"] as? [String: Any]
@@ -98,6 +113,20 @@ class ResponseGeneratorV1Tests: XCTestCase {
         XCTAssertEqual(jsonOutputSpeech?.count, 2)
         XCTAssertEqual(jsonOutputSpeech?["type"] as? String, "PlainText")
         XCTAssertEqual(jsonOutputSpeech?["text"] as? String, "text")
+    }
+
+    func testStandardResponseRepromptSSML() {
+        let outputSpeech = OutputSpeech.ssml(text: "<speak>Hello</speak>")
+        let standardResponse = StandardResponse(reprompt: outputSpeech)
+        generator.update(standardResponse: standardResponse, sessionAttributes: [:])
+
+        let json = generator.generateJSONObject()
+        let jsonResponse = json["response"] as? [String: Any]
+        let jsonReprompt = jsonResponse?["reprompt"] as? [String: Any]
+        let jsonOutputSpeech = jsonReprompt?["outputSpeech"] as? [String: Any]
+        XCTAssertEqual(jsonOutputSpeech?.count, 2)
+        XCTAssertEqual(jsonOutputSpeech?["type"] as? String, "SSML")
+        XCTAssertEqual(jsonOutputSpeech?["ssml"] as? String, "<speak>Hello</speak>")
     }
 
     func testStandardResponseShouldEndSessionTrue() {

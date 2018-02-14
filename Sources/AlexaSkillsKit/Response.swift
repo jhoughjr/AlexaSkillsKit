@@ -24,10 +24,12 @@ public struct StandardResponse: Equatable {
 //
 public enum OutputSpeech: Equatable {
     case plain(text: String)
+    case ssml(text: String)
     
     public static func ==(lhs: OutputSpeech, rhs: OutputSpeech) -> Bool {
         switch (lhs, rhs) {
         case (.plain(let textLhs), .plain(let textRhs)) where textLhs == textRhs: return true
+        case (.ssml(let textLhs), .ssml(let textRhs)) where textLhs == textRhs: return true
         default: return false
         }
     }

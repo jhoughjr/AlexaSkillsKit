@@ -50,6 +50,7 @@ extension ResponseGeneratorV1 {
     class func generateOutputSpeech(_ outputSpeech: OutputSpeech) -> [String: Any] {
         switch outputSpeech {
         case .plain(let text): return ["type": "PlainText", "text": text]
+        case .ssml(let text): return ["type": "SSML", "ssml": text]
         }
     }
     
